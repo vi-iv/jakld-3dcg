@@ -1,4 +1,4 @@
-;;; Rendering
+;;;; Rendering
 
 ;;; light
 

@@ -2,7 +2,7 @@
 * version 0.2.1
 
 ### 概要
-* Structure and Interpretation of Computer Programs[1] (SICP) による Picture Language の拡張
+* Structure and Interpretation of Computer Programs[1] による Picture Language の拡張
 * Scheme 処理系 JAKLD[2] 上での 3 次元モデルの構成, 描画, 保存
     * 保存形式は S 式または SCAD スクリプト[3]
 
@@ -13,13 +13,13 @@
 * 必要なファイルをロード
     * (start-picture)
     * (load "load.scm")
-* 視点や証明を定義して帯域変数に設定
+* 視点や証明を定義して大域変数に設定
     * (define camera ...)
-    * (set! *camera* camera)
+    * (set! \*camera\* camera)
     * (define lights ...)
-    * (set! *lights* lights)
-    * (set! *painter-filled?* #t) ; ソリッド
-    * (set! *painter-filled?* #f) ; ワイヤフレーム
+    * (set! \*lights\* lights)
+    * (set! \*painter-filled?\* #t) ; ソリッド
+    * (set! \*painter-filled?\* #f) ; ワイヤフレーム
 * モデルの表面属性を定義
     * (define attribute ...)
 * モデルを定義
@@ -36,7 +36,7 @@
     * (import model "model.scm") ; 読込は S 式のみで可
 
 ### サンプル
-* sample.scm
+* sample.scm (load.scm でロード済み)
     * (show cube0)
     * (show sphere0)
     * (show cylinder0)

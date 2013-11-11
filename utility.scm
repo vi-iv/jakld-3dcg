@@ -295,11 +295,6 @@
             (cons (dot (row i matrix0) (col j matrix1))
                   result)))))
 
-;; (mul '((1 0) (0 1)) '((2 3) (4 5)))
-;; (mul '((1 0) (0 1)) '((2 3)))
-;; (mul '((1 0 0) (0 1 0) (0 0 1)) '((2 3 4) (4 5 6) (6 7 8)))
-;; (mul '((1 2 3) (4 5 6) (7 8 9)) '((1 4 7) (2 5 8) (3 6 9)))
-
 (define (display-matrix matrix)
   (let display-col ((n 0))
     (if (= n (length (car matrix)))
