@@ -14,6 +14,9 @@
   (let ((n (if (null? n) 1 (car n))))
     (list-tail lst (- (length lst) n))))
 
+(define (last1 lst)
+  (car (last lst 1)))
+
 (define (butlast lst . n)
   (let ((l (length lst))
         (n (if (null? n) 1 (car n))))
@@ -119,13 +122,29 @@
 
 (define sort shell-sort)
 
+(define (enumerate begin end difference)
+  (do ((n begin (+ n difference))
+       (result nil (append1 result n)))
+      ((>= n end) result)))
+
 ;;; math
 
+(define (/= number . numbers)
+  (let rec0 ((ns0 (cons number numbers)))
+    (if (null? ns0)
+        #t
+        (and (let rec1 ((ns1 (cdr ns0)))
+               (if (null? ns1)
+                   #t
+                   (and (not (= (car ns0) (car ns1)))
+                        (rec1 (cdr ns1)))))
+             (rec0 (cdr ns0))))))
+
 (define (radian->degree radian)
-  (* radian (/ +pi+ 180)))
+  (* radian (/ 180 +pi+)))
 
 (define (degree->radian degree)
-  (* radian (/ 180 +pi+)))
+  (* degree (/ +pi+ 180)))
 
 (define (square x)
   (* x x))

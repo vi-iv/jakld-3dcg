@@ -1,9 +1,5 @@
 ;;;; File I/O
 
-;;; constant value
-
-(define +NL+ (string #\newline))
-
 ;;; general
 
 (define (export painter file-name . file-type)
@@ -56,7 +52,7 @@
        (result nil))
       ((null? nums)
        (apply string-append (butlast result 1)))
-    (let ((numstr (number->string (car nums))))
+    (let ((numstr (number->string% (car nums))))
       (set! result
             (append result (list numstr ","))))))
 
@@ -68,26 +64,27 @@
          (string-append "cube(size=[" (vector->string size) "],center=false);" +NL+)))
       ('sphere
        (let ((radius (option ml-model 0))
-             (resolution (option ml-model 1)))
-         (string-append "sphere(r=" (number->string radius)
-                        ",$fn=" (number->string resolution) ",center=false);" +NL+)))
+             (resolution (* *resolution-scale* (option ml-model 1))))
+         (string-append "sphere(r=" (number->string% radius)
+                        ",$fn=" (number->string% resolution) ",center=false);" +NL+)))
       ('cylinder
        (let ((height (option ml-model 0))
              (top-radius (option ml-model 1))
              (bottom-radius (option ml-model 2))
-             (resolution (option ml-model 3)))
-         (string-append "cylinder(h=" (number->string height)
-                        (cond ((null? top-radius)
-                               (string-append ",r=" (number->string bottom-radius)))
-                              ((null? bottom-radius)
-                               (string-append ",r=" (number->string top-radius)))
-                              (else
-                               (string-append ",r1=" (number->string bottom-radius)
-                                              ",r2=" (number->string top-radius))))
-                        ",$fn=" (number->string resolution) ",center=false);" +NL+)))
+             (resolution (* *resolution-scale* (option ml-model 3))))
+         (string-append "cylinder(h=" (number->string% height)
+                        (string-append ",r1=" (number->string% bottom-radius)
+                                       ",r2=" (number->string% top-radius))
+                        ",$fn=" (number->string% resolution) ",center=false);" +NL+)))
       ('scale
        (let ((scale (option ml-model 0)))
          (string-append "scale(v=[" (vector->string scale) "]) {" +NL+
+                        (ml-model->scad-string (child ml-model 0)) "}" +NL+)))
+      ('rotate
+       (let ((degree (option ml-model 0))
+             (axis (option ml-model 1)))
+         (string-append "rotate(" (number->string degree)
+                        ", [" (vector->string axis) "]) {" +NL+
                         (ml-model->scad-string (child ml-model 0)) "}" +NL+)))
       ('translate
        (let ((vector (option ml-model 0)))

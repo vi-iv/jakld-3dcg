@@ -66,7 +66,7 @@
                                   (rec v1 v5 v3 (1- c))
                                   (rec v2 v3 v4 (1- c))
                                   (rec v3 v4 v5 (1- c)))))))))
-    (let ((sc (ceiling (* resolution 0.1)))
+    (let ((sc (ceiling (* resolution 1)))
           (a (list 0.0 0.0 radius))
           (b (list radius 0.0 0.0))
           (c (list 0.0 radius 0.0))
@@ -75,6 +75,34 @@
           (f (list 0.0 0.0 (- radius))))
       (append (rec a b c sc) (rec a c d sc) (rec a d e sc) (rec a e b sc)
               (rec f b c sc) (rec f c d sc) (rec f d e sc) (rec f e b sc)))))
+
+(define (make-polygons-cylinder attribute height top-radius bottom-radius resolution)
+  (let* ((sc (ceiling (* resolution 10)))
+         (rad (enumerate 0 (* 2 +pi+) (/ +pi+ sc))))
+    (let ((tops (map (lambda (a)
+                       (list (* top-radius (cos a))
+                             (* top-radius (sin a))
+                             height))
+                     rad))
+          (bots (map (lambda (a)
+                       (list (* bottom-radius (cos a))
+                             (* bottom-radius (sin a))
+                             0))
+                     rad)))
+      (let ((mkp (cond ((/= (* top-radius bottom-radius) 0)
+                        (lambda (tp0 tp1 bp0 bp1)
+                          (make-polygon attribute (list tp0 bp0 bp1 tp1))))
+                       ((= top-radius 0)
+                        (lambda (tp0 tp1 bp0 bp1)
+                          (make-polygon attribute (list tp0 bp0 bp1))))
+                       ((= bottom-radius 0)
+                        (lambda (tp0 tp1 bp0 bp1)
+                          (make-polygon attribute (list tp0 bp0 tp1)))))))
+        (append (map mkp
+                     tops (append1 (cdr tops) (car tops))
+                     bots (append1 (cdr bots) (car bots)))
+                (if (/= top-radius 0) (list (make-polygon attribute tops)))
+                (if (/= bottom-radius 0) (list (make-polygon attribute bots))))))))
 
 ;;; middle level representation
 ;;
@@ -123,15 +151,16 @@
         (list-ref chs (car n)))))
 
 (define (make-painter type properties ml-model->ll-model)
-  (let ((ml-model (list 'type type 'properties properties)))
+  (let* ((ml-model (list 'type type 'properties properties))
+         (ll-model (ml-model->ll-model ml-model))
+         (painter (ll-model->painter ll-model)))
     (lambda (frame-or-key)
       (case frame-or-key
         ('type     type)
         ('ml-model ml-model)
-        ('ll-model (ml-model->ll-model ml-model))
-        ('painter  (ll-model->painter (ml-model->ll-model ml-model)))
-        (else ((ll-model->painter (ml-model->ll-model ml-model))
-               frame-or-key))))))
+        ('ll-model ll-model)
+        ('painter painter)
+        (else (painter frame-or-key))))))
 
 (define (polygon attribute vertexes)
   (make-painter
@@ -157,13 +186,14 @@
      (make-ll-model '3d-model
                     (make-polygons-sphere attribute radius resolution)))))
 
-(define (cylinder attribute height top-radius bottom-radius resolution>)
+(define (cylinder attribute height top-radius bottom-radius resolution)
   (make-painter
    'cylinder
    (list 'attribute attribute 'options (list height top-radius bottom-radius resolution))
    (lambda (ml-model)
      (make-ll-model '3d-model
-                    (list )))))
+                    (make-polygons-cylinder attribute
+                                            height top-radius bottom-radius resolution)))))
 
 (define (scale scale painter)
   (make-painter
@@ -176,6 +206,20 @@
                              (make-polygon (getf p 'attribute)
                                            (map (lambda (v) (scl scale v))
                                                 (getf p 'vertexes))))
+                           (getf child-ll-model 'polygons)))))))
+
+(define (rotate degree axis painter)
+  (make-painter
+   'rotate
+   (list 'children (list (painter 'ml-model)) 'options (list degree axis))
+   (lambda (ml-model)
+     (let ((child-ll-model (painter 'll-model)))
+       (make-ll-model (getf child-ll-model 'type)
+                      (map (lambda (p)
+                             (make-polygon
+                              (getf p 'attribute)
+                              (map (lambda (v) (rod axis (degree->radian degree) v))
+                                   (getf p 'vertexes))))
                            (getf child-ll-model 'polygons)))))))
 
 (define (translate vector painter)
@@ -281,7 +325,7 @@
             ((vertexes->painter
               (map (lambda (v) (twin->pair (map-point v 2d-frame)))
                    verts)
-              #t)
+              *painter-filled?*)
              nt-frame)))))))
 
 (define (3d-ll-model->painter 3d-ll-model)

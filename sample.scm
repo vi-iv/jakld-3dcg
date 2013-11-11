@@ -24,24 +24,25 @@
 
 ;;; camera and lights
 
-(define camera (make-camera '(1.0 1.0 1.0)
-                            '(-1.0 -1.0 -1.0)
-                            '(10.0 10.0 20.0)))
+(define camera0 (make-camera '(10.0 10.0 10.0)
+                             '(-1.0 -1.0 -1.0)
+                             '(75.0 75.0 200.0)))
 
-(define lights (list (make-parallel-light '(-1.0 -1.0 -1.0)
+(define camera1 (make-camera '(0.5 1.0 0.5)
+                             '(-1.0 -2.0 -1.0)
+                             '(7.5 7.5 20.0)))
+
+(define camera2 (make-camera '(1.0 1.0 1.0)
+                             '(-1.0 -1.0 -1.0)
+                             '(7.5 7.5 20.0)))
+
+(define lights0 (list (make-parallel-light '(-1.0 -1.0 -1.0)
                                           (make-intensity 0.5 0.5 0.5))))
 
-(set! *camera* camera)
-(set! *lights* lights)
+(set! *camera* camera0)
+(set! *lights* lights0)
 
 ;;; color and attribute
-
-(define *black* (make-color 0.0 0.0 0.0))
-(define *white* (make-color 1.0 1.0 1.0))
-
-(define *red*   (make-color 1.0 0.0 0.0))
-(define *green* (make-color 0.0 1.0 0.0))
-(define *blue*  (make-color 0.0 0.0 1.0))
 
 (define attribute0
   (make-attribute (hex->color #x000000)
@@ -59,10 +60,18 @@
                   (make-color 0 0 0)
                   3))
 
+(define attribute3 ;; for 2d-model
+  (make-attribute (make-color 1.0 0.0 0.0)
+                  nil
+                  nil
+                  nil
+                  nil
+                  nil))
+
 ;;; 2d model
 
 (define letterlambda
-  (polygon *black*
+  (polygon attribute3
            (list (list .45 .6)
                  (list .25 .2)
                  (list .2 .2)
@@ -85,24 +94,120 @@
 ;;; 3d model
 
 (define cube0
-  (cube attribute0 (list 1.0 1.0 1.0)))
+  (cube attribute0 (list 10.0 10.0 10.0)))
 
 (define cube1
-  (cube attribute0 (list 0.5 0.5 0.5)))
+  (cube attribute0 (list 5.0 5.0 5.0)))
 
 ;; (show cube0)
 ;; (cube0 *2d-frame-left-half*)
 ;; (cube0 *2d-frame-rihgt-half*)
 
 (define sphere0
-  (sphere attribute0 1.0 20))
+  (sphere attribute0 10.0 2))
 
 (define sphere1
-  (sphere attribute0 1.0 20))
+  (sphere attribute0 10.0 4))
 
 ;; (show sphere0)
 ;; (sphere0 *2d-frame-left-half*)
 ;; (sphere0 *2d-frame-rihgt-half*)
 
+(define cylinder0
+  (cylinder attribute0 10.0 5.0 5.0 2))
+
+(define cylinder1
+  (cylinder attribute0 20.0 0.0 5.0 2))
+
 ;;; transform
 
+(define cubes0
+  (translate '(-10.0 -10.0 -10.0)
+             (union cube1
+                    (translate '(10.0  0.0  0.0) cube1)
+                    (translate '( 0.0  0.0 10.0) cube1)
+                    (translate '(10.0  0.0 10.0) cube1)
+                    (translate '(20.0  0.0  0.0) cube1)
+                    (translate '( 0.0  0.0 20.0) cube1)
+                    (translate '(20.0  0.0 20.0) cube1)
+                    (translate '(20.0  0.0 10.0) cube1)
+                    (translate '(10.0  0.0 20.0) cube1)
+
+                    (translate '( 0.0  0.75  0.0) cube1)
+                    (translate '(10.0  0.75  0.0) cube1)
+                    (translate '( 0.0  0.75 10.0) cube1)
+                    (translate '(10.0  0.75 10.0) cube1)
+                    (translate '(20.0  0.75  0.0) cube1)
+                    (translate '( 0.0  0.75 20.0) cube1)
+                    (translate '(20.0  0.75 20.0) cube1)
+                    (translate '(20.0  0.75 10.0) cube1)
+                    (translate '(10.0  0.75 20.0) cube1))))
+
+(define spheres0
+  (union (translate '(10.0 0.0 0.0) sphere0)
+         (translate '(0.0 0.0 10.0) sphere0)
+         (translate '(-10.0 0.0 0.0) sphere0)
+         (translate '(0.0 0.0 -10.0) sphere0)))
+
+(define cylinders0
+  (union (translate '(10.0 0.0 0.0) cylinder1)
+         (translate '(0.0 0.0 10.0) cylinder1)
+         (translate '(-10.0 0.0 0.0) cylinder1)
+         (translate '(0.0 0.0 -10.0) cylinder1)))
+
+(define cylinders1
+  (let ((cyl (translate '(0.0 0.0 0.5) cylinder1)))
+    (union cyl
+           (rotate 90 '(1.0 1.0 1.0) cyl)
+           (rotate 180 '(1.0 1.0 1.0) cyl)
+           (rotate 270 '(1.0 1.0 1.0) cyl))))
+
+(define cylinders2
+  (union
+   (rotate 90 '(1.0 0.0 0.0) cylinders0)
+   (rotate 90 '(1.0 0.0 0.0) (translate '(0.0 20.0 0.0) cylinders0))
+   (rotate 90 '(1.0 0.0 0.0) (translate '(0.0 -20.0 0.0) cylinders0))))
+
+;;; Menger sponge
+
+(define (menger-sponge1 attribute size max-count . height)
+  (define (insert-y xz y)
+    (list (car xz) y (cadr xz)))
+  (define (menger-sponge-iter origin size counter)
+    (let ((s/3 (map (lambda (x) (/ x 3)) size)))
+      (let ((x1 (x s/3)) (x2 (* 2 (x s/3)))
+            (y1 (y s/3)) (y2 (* 2 (y s/3))))
+        (if (= counter 0)
+            (list origin)
+            (append (menger-sponge-iter origin s/3 (1- counter))
+                    (menger-sponge-iter (add origin (list x1 0.0)) s/3 (1- counter))
+                    (menger-sponge-iter (add origin (list x2 0.0)) s/3 (1- counter))
+                    (menger-sponge-iter (add origin (list 0.0 y1)) s/3 (1- counter))
+                    ;;(menger-sponge-iter (add origin (list x1  y1)) s/3 (1- counter))
+                    (menger-sponge-iter (add origin (list x2  y1)) s/3 (1- counter))
+                    (menger-sponge-iter (add origin (list 0.0 y2)) s/3 (1- counter))
+                    (menger-sponge-iter (add origin (list x1  y2)) s/3 (1- counter))
+                    (menger-sponge-iter (add origin (list x2  y2)) s/3 (1- counter)))))))
+  (let* ((cube-size% (map (lambda (x) (/ x (expt 3 max-count))) size))
+         (height (if (null? height) (car cube-size%) (car height)))
+         (cube-size (insert-y cube-size% height)))
+    (apply union
+           (map (lambda (orig)
+                  (translate (insert-y orig 0.0) (cube attribute cube-size)))
+                (menger-sponge-iter (list 0.0 0.0) size max-count)))))
+
+;; (define sponge0
+;;   (translate '(-10.0 -15.0 -10.0) (menger-sponge1 attribute0 '(30.0 30.0) 1)))
+;; (define sponge1
+;;   (translate '(-10.0 -15.0 -10.0) (menger-sponge1 attribute0 '(30.0 30.0) 2)))
+;; (define sponge2
+;;   (translate '(-10.0 -15.0 -10.0) (menger-sponge1 attribute0 '(30.0 30.0) 3)))
+
+;; (set! *camera* camera1)
+
+;; (define sponge3
+;;   (translate '(-30.0 -16.0 -30.0) (menger-sponge1 attribute0 '(50.0 50.0) 1 1)))
+;; (define sponge4
+;;   (translate '(-30.0 -16.0 -30.0) (menger-sponge1 attribute0 '(50.0 50.0) 2 1)))
+;; (define sponge5
+;;   (translate '(-30.0 -16.0 -30.0) (menger-sponge1 attribute0 '(50.0 50.0) 3 1)))
