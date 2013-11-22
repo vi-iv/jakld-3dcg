@@ -2,12 +2,12 @@
 * version 0.2.1
 
 ### 概要
-* Structure and Interpretation of Computer Programs[1] による Picture Language の拡張
+* Structure and Interpretation of Computer Programs[1] による Picture Language の応用
 * Scheme 処理系 JAKLD[2] 上での 3 次元モデルの構成, 描画, 保存
-    * 保存形式は S 式または SCAD スクリプト[3]
 
 ### 環境
 * JAKLD
+    * vertexes->painter などに依存
 
 ### 使用法
 * 必要なファイルをロード
@@ -31,7 +31,7 @@
     * (show model)  ; フレーム指定なし(描画可能範囲全体を使用)
 * 保存
     * (export model "model.scm") ; S 式として保存
-    * (export model "model.scad" 'scad) ; SCAD スクリプトとして保存
+    * (export model "model.scad" 'scad) ; SCAD スクリプト[3]として保存
 * 読込み
     * (import model "model.scm") ; 読込は S 式のみで可
 
@@ -43,6 +43,7 @@
     * ...
 
 ### 備考
+* 保存形式は S 式または SCAD スクリプト
 * 描画時に負荷が高いのは仕様 (計算時間大)
 * 描画時の 3D フレーム指定を不可能とするかわりに遅延評価しない版: modeling2.scm
     * (load "modeling2.scm")
@@ -52,7 +53,7 @@
 
 ### TODO
 * マニュアル書く
-* phonng-mode-shade 周辺にバグ (色が変)
+* phong-mode-shade 周辺にバグ (色が変)
 * 未実装: polyhedron, ...
 * 未実装: intersection, defference, ...
 
