@@ -1,5 +1,5 @@
 ## 3DCG on JAKLD (jakld-3dcg)
-* version 0.2.1
+* version 0.2.2
 
 ### 概要
 * Structure and Interpretation of Computer Programs[1] による Picture Language の応用
@@ -54,7 +54,6 @@
 ### TODO
 * マニュアル書く
 * phong-mode-shade 周辺にバグ (色が変)
-* 未実装: polyhedron, ...
 * 未実装: intersection, defference, ...
 
 ### リンク
