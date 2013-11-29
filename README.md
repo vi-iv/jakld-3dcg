@@ -1,5 +1,5 @@
 ## 3DCG on JAKLD (jakld-3dcg)
-* version 0.2.2
+* version 0.2.3
 
 ### 概要
 * Structure and Interpretation of Computer Programs[1] による Picture Language の応用
