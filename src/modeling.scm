@@ -220,7 +220,8 @@
        (make-ll-model (getf child-ll-model 'type)
                       (map (lambda (p)
                              (make-polygon (getf p 'attribute)
-                                           (map (lambda (v) (scl scale v))
+                                           (map (lambda (vert)
+                                                  (map (lambda (p) (* s p)) scale vert))
                                                 (getf p 'vertexes))))
                            (getf child-ll-model 'polygons)))))))
 
