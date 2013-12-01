@@ -30,4 +30,6 @@
 
 (define *resolution-scale* 10)
 
-(define *latest-2d-model* nil)
+(define *latest-model* nil)
+
+(define *render-cache* nil)

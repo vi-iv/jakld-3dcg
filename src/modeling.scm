@@ -166,8 +166,7 @@
       (case frame-or-key
         ('type type)
         ('model model)
-        (else (let ((model (transform-model model frame-or-key)))
-                (draw model)))))))
+        (else (draw (transform-model model frame-or-key)))))))
 
 (define (map-point point frame)
   (let ((mat1 (vector->matrix point))
@@ -184,27 +183,13 @@
        polygons))
 
 (define (transform-model model frame)
-  (if (not (type=? model frame))
-      (begin (display "(^^;0 ")
-             (display model)
-             (display frame)))
   (if (type=? model frame)
       (let ((polygons (getf model 'polygons)))
         (make-model (type-of model)
                     (type-of frame)
-                    (list model frame)
+                    (list frame model)
                     (map-polygons (lambda (vertex) (map-point vertex frame))
                                   (getf model 'polygons))))))
-
-(define (transform-painter painter frame)
-  (if (not (type=? model frame))
-      (display "(^^;1 "))
-  (if (type=? painter frame)
-      (make-painter (type-pf painter)
-                    (type-of frame)
-                    (list painter frame)
-                    (map-polygons (lambda (vetrex) (map-point vertex frame))
-                                  (getf (painter 'model) 'polygons)))))
 
 (define (painter:polyhedron attribute points triangles)
   (make-painter 'dim3
@@ -214,11 +199,19 @@
 
 (define (painter:union painter . painters)
   (let* ((painters (cons painter painters)))
-    (make-painter (getf (car models) 'type)
+    (make-painter ((car painters) 'type)
                   'union
-                  (list painters)
-                  (mapend (lambda (p) (getf (p 'model) 'polygons))
-                          painters))))
+                  (map (lambda (p) (p 'model)) painters)
+                  (mappend (lambda (p) (getf (p 'model) 'polygons))
+                           painters))))
+
+(define (painter:transform painter frame)
+  (if (type=? painter frame)
+      (make-painter (type-pf painter)
+                    (type-of frame)
+                    (list frame (painter 'model))
+                    (map-polygons (lambda (vetrex) (map-point vertex frame))
+                                  (getf (painter 'model) 'polygons)))))
 
 ;;; optional painter
 
@@ -244,7 +237,7 @@
 (define (painter:scale scale painter)
   (make-painter (getf (painter 'model) 'type)
                 'scale
-                (list scale painter)
+                (list scale (painter 'model))
                 (map-polygons (lambda (vertex) (mul scale vertex))
                               (getf (painter 'model) 'polygons))))
 
@@ -252,14 +245,14 @@
   (let ((rad (degree->radian degree)))
     (make-painter (getf (painter 'model) 'type)
                   'rotate
-                  (list degree axis painter)
+                  (list degree axis (painter 'model))
                   (map-polygons (lambda (vertex) (rod axis rad vertex))
                                 (getf (painter 'model) 'polygons)))))
 
 (define (painter:translate vector painter)
   (make-painter (getf (painter 'model) 'type)
                 'translate
-                (list vector painter)
+                (list vector (painter 'model))
                 (map-polygons (lambda (vertex) (add vector vertex))
                               (getf (painter 'model) 'polygons))))
 
@@ -274,7 +267,8 @@
                     ('dim3 (3d-model->2d-model model *camera* *lights*)))))
     (do ((polygons (getf 2d-model 'polygons) (cdr polygons)))
         ((null? polygons)
-         (set! *latest-2d-model* 2d-model)
+         (set! *latest-model* model)
+         (set! *render-cache* 2d-model)
          #t)
       (let ((polygon (car polygons)))
         (let ((color (getf (getf polygon 'attribute) 'color))
@@ -287,10 +281,14 @@
            +nt-frame-full+))))))
 
 (define (redraw)
-  (if (null? *latest-2d-model*)
+  (if (null? *render-cache*)
       (error "not drawn any model")
-      (draw *latest-2d-model*)))
+      (draw *render-cache*)))
 
 (define (show painter . frame)
   (clear-picture)
-  (painter (if (null? frame) +nt-frame-full+ (car frame))))
+  (painter (if (null? frame)
+               (case (painter 'type)
+                 ('dim2 +2d-frame-full+)
+                 ('dim3 +3d-frame-full+))
+               (car frame))))
