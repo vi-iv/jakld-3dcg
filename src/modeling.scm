@@ -2,14 +2,23 @@
 
 ;;; general
 
-(define (type-of epression)
-  (getf epression 'type))
+(define (type-of expression . not-exist-error?)
+  (getf expression 'type (car not-exist-error?)))
+
+(define (type=? expression0 expression1)
+  (eq? (type-of expression0) (type-of expression1)))
 
 (define (make-color r g b)
   (list 'r r 'g g 'b b))
 
 (define (make-attribute color ka kd ks ke shininess)
-  (list 'color color 'ka ka 'kd kd 'ks ks 'ke ke 'shininess shininess))
+  (list 'color color         ;
+        'ka ka               ;
+        'kd kd               ;
+        'ks ks               ;
+        'ke ke               ;
+        'shininess shininess ;
+        ))
 
 (define (color->hex color)
   (if (number? color)
@@ -27,7 +36,38 @@
         (b (remainder hex (expt 16 2))))
     (make-color (/ r 255) (/ g 255) (/ b 255))))
 
-;;; make vertexes and polygons
+;;; frame
+
+(define (make-2d-frame origin x-edge y-edge)
+  (list 'type 'dim2
+        'origin origin
+        'edges (list x-edge y-edge)))
+
+(define (make-3d-frame origin x-edge y-edge z-edge)
+  (list 'type 'dim3
+        'origin origin
+        'edges (list x-edge y-edge z-edge)))
+
+(define (frame? object)
+  (and (list? object)))
+
+(define (nt-frame? frame)
+  (and (frame? frame)
+       (null? (type-of frame))))
+
+(define (2d-frame? frame)
+  (and (frame? frame)
+       (eq? (type-of frame) 'dim2)))
+
+(define (3d-frame? frame)
+  (and (frame? frame)
+       (eq? (type-of frame) 'dim3)))
+
+;;; vertexes and polygons
+
+(define (make-polygon attribute vertexes)
+  (list 'attribute attribute
+        'vertexes vertexes))
 
 (define (make-polygons-tetragon-hexahedron attribute 8vertexes)
   (let ((comb '((0 1 2 3) (0 1 5 4) (1 2 6 5)
@@ -112,206 +152,22 @@
                             t)))
        triangles))
 
-;;; middle level representation
-;;
-;; ml-model : <primitive shape> or <transform method>
-;; - primitive shape : ('type <type> 'properties <shape-properties>)
-;; -- type : 'cube, 'sphere, 'cylinder, or 'polyhedron
-;; -- <shape-properties> : ('attribute <attribute> 'options <options>)
-;; --- attribute : ('color color 'ka <ka> 'kd <kd> 'ks <ks> 'ke <ke>
-;; ---              'shininess <shininess>)
-;; ---- color : ('r <r> 'g <g> 'b <b>)
-;; ----- r, g, b : value in [0 1]
-;; --- options
-;; ---- (2d) type == 'polygon : (<vertexes>)
-;; ---- (3d) type == 'cube : (<size>)
-;; ----- size : <3d-vector>
-;; ------ 3d-vector : (<number> <number> <number>)
-;; ---- (3d) type == 'sphere : (<radius> <resolution>)
-;; ---- (3d) type == 'cylinder : (<height> <top-radius> <bottom-radius> <resolution>)
-;; ---- (3d) type == 'polyhedron : (<vertexes>)
-;; - transfrom method : ('type <type> 'properties <method-properties>)
-;; -- type : 'scale, 'resize, rotate, 'translate, ...
-;;           'union, 'difference, 'intersection, ...
-;; -- method-properties : ('children children 'options options)
-;; --- children : (ml-model ... ml-model)
-;; --- options
-;; ---- type == 'scale : (<scale>)
-;; ----- scale : <3d-vector>
-;; ---- type == 'rotate : (<angle> <axis>)
-;; ----- angle : <degree>
-;; ----- axis : <2d-vector> or <3d-vector>
-;; ------ 2d-vector : (<number> <number>)
-;; ---- type == 'translate : (<2d-vector>) or (<3d-vector>)
-;; ---- type == 'union : ()
-;;
+;;; primitive painter
 
-(define (option ml-model . n)
-  (let ((ops (getf (getf ml-model 'properties) 'options)))
-    (if (null? n)
-        ops
-        (list-ref ops (car n)))))
-
-(define (child ml-model . n)
-  (let ((chs (getf (getf ml-model 'properties) 'children)))
-    (if (null? n)
-        chs
-        (list-ref chs (car n)))))
-
-(define (make-painter type properties ml-model->ll-model)
-  (let* ((ml-model (list 'type type 'properties properties))
-         (ll-model (ml-model->ll-model ml-model))
-         (painter (ll-model->painter ll-model)))
-    (lambda (frame-or-key)
-      (case frame-or-key
-        ('type     type)
-        ('ml-model ml-model)
-        ('ll-model ll-model)
-        ('painter painter)
-        (else (painter frame-or-key))))))
-
-(define (polygon attribute vertexes)
-  (make-painter
-   'polygon
-   (list 'attribute attribute 'options (list vertexes))
-   (lambda (ml-model)
-     (make-ll-model '2d-model
-                    (list (make-polygon attribute vertexes))))))
-
-(define (cube attribute size)
-  (make-painter
-   'cube
-   (list 'attribute attribute 'options (list size))
-   (lambda (ml-model)
-     (make-ll-model '3d-model
-                    (make-polygons-cuboid attribute size)))))
-
-(define (sphere attribute radius resolution)
-  (make-painter
-   'sphere
-   (list 'attribute attribute 'options (list radius resolution))
-   (lambda (ml-model)
-     (make-ll-model '3d-model
-                    (make-polygons-sphere attribute radius resolution)))))
-
-(define (cylinder attribute height top-radius bottom-radius resolution)
-  (make-painter
-   'cylinder
-   (list 'attribute attribute 'options (list height top-radius bottom-radius resolution))
-   (lambda (ml-model)
-     (make-ll-model '3d-model
-                    (make-polygons-cylinder attribute
-                                            height top-radius bottom-radius resolution)))))
-
-(define (polyhedron attribute points triangles)
-  (make-painter
-   'polyhedron
-   (list 'attribute attribute 'options (list points triangles))
-   (lambda (ml-model)
-     (make-ll-model '3d-model
-                    (make-polygons-polyhedron attribute points triangles)))))
-
-(define (scale scale painter)
-  (make-painter
-   'scale
-   (list 'children (list (painter 'ml-model)) 'options (list scale))
-   (lambda (ml-model)
-     (let ((child-ll-model (painter 'll-model)))
-       (make-ll-model (getf child-ll-model 'type)
-                      (map (lambda (p)
-                             (make-polygon (getf p 'attribute)
-                                           (map (lambda (vert)
-                                                  (map (lambda (p) (* s p)) scale vert))
-                                                (getf p 'vertexes))))
-                           (getf child-ll-model 'polygons)))))))
-
-(define (rotate degree axis painter)
-  (make-painter
-   'rotate
-   (list 'children (list (painter 'ml-model)) 'options (list degree axis))
-   (lambda (ml-model)
-     (let ((child-ll-model (painter 'll-model)))
-       (make-ll-model (getf child-ll-model 'type)
-                      (map (lambda (p)
-                             (make-polygon
-                              (getf p 'attribute)
-                              (map (lambda (v) (rod axis (degree->radian degree) v))
-                                   (getf p 'vertexes))))
-                           (getf child-ll-model 'polygons)))))))
-
-(define (translate vector painter)
-  (make-painter
-   'translate
-   (list 'children (list (painter 'ml-model)) 'options (list vector))
-   (lambda (ml-model)
-     (let ((child-ll-model (painter 'll-model)))
-       (make-ll-model (getf child-ll-model 'type)
-                      (map (lambda (p)
-                             (make-polygon (getf p 'attribute)
-                                           (map (lambda (v) (add v vector))
-                                                (getf p 'vertexes))))
-                           (getf child-ll-model 'polygons)))))))
-
-(define (union painter . painters)
-  (let ((painters (cons painter painters)))
-    (make-painter
-     'union
-     (list 'children (map (lambda (p) (p 'ml-model))
-                          painters))
-     (lambda (ml-model)
-       (let ((child-ll-models (map (lambda (p) (p 'll-model))
-                                   painters)))
-         (make-ll-model (getf (car child-ll-models) 'type)
-                        (apply append
-                               (map (lambda (p) (getf p 'polygons))
-                                    child-ll-models))))))))
-
-;;; low level representation
-;;
-;; ll-model : ('type <model-type> 'polygons <polygons>)
-;; - model-type : '3d-model or '2d-model
-;; - polygons : (<polygon> ... <polygon>)
-;; -- polygon : ('attribute attribute 'vertexes <vertexes>)
-;; --- vertexes : (<vertex> ... <vertex>)
-;; ---- vertex : <point>
-;; ----- point : <2d-point> or <3d-point>
-;; ------ 2d-point : <2d-vector>
-;; ------- 2d-vector : (<number> <number>)
-;; ------ 3d-point : <3d-vector>
-;; ------- 3d-vector : (<number> <number> <number>)
-;;
-;; frame : ('type <type> 'origin <origin> 'edges <edges>
-;; - frame-type : '3d-frame or '2d-frame
-;; --- origin : 2d-point or 3d-point
-;; --- edges : (2d-point 2d-point) or (3d-point 3d-point 3d-point)
-;;
-
-(define (nt-frame? frame)
-  (null? (getf frame 'type #f)))
-
-(define (2d-frame? frame)
-  (eq? (getf frame 'type #f) '2d-frame))
-
-(define (3d-frame? frame)
-  (eq? (getf frame 'type #f) '3d-frame))
-
-(define (make-polygon attribute vertexes)
-  (list 'attribute attribute
-        'vertexes vertexes))
-
-(define (make-ll-model type polygons)
+(define (make-model type subtype properties polygons)
   (list 'type type
+        'subtype subtype
+        'properties properties
         'polygons polygons))
 
-(define (make-2d-frame origin x-edge y-edge)
-  (list 'type '2d-frame
-        'origin origin
-        'edges (list x-edge y-edge)))
-
-(define (make-3d-frame origin x-edge y-edge z-edge)
-  (list 'type '3d-frame
-        'origin origin
-        'edges (list x-edge y-edge z-edge)))
+(define (make-painter type subtype properties polygons)
+  (let ((model (make-model type subtype properties polygons)))
+    (lambda (frame-or-key)
+      (case frame-or-key
+        ('type type)
+        ('model model)
+        (else (let ((model (transform-model model frame-or-key)))
+                (draw model)))))))
 
 (define (map-point point frame)
   (let ((mat1 (vector->matrix point))
@@ -321,42 +177,119 @@
       (add (matrix->vector (mul mat0 mat1))
            orig))))
 
-(define (ll-model->painter ll-model)
-  (case (type-of ll-model)
-    ('2d-model (2d-ll-model->painter ll-model))
-    ('3d-model (3d-ll-model->painter ll-model))))
+(define (map-polygons procedure polygons)
+  (map (lambda (polygon)
+         (make-polygon (getf polygon 'attribute)
+                       (map procedure (getf polygon 'vertexes))))
+       polygons))
+
+(define (transform-model model frame)
+  (if (not (type=? model frame))
+      (begin (display "(^^;0 ")
+             (display model)
+             (display frame)))
+  (if (type=? model frame)
+      (let ((polygons (getf model 'polygons)))
+        (make-model (type-of model)
+                    (type-of frame)
+                    (list model frame)
+                    (map-polygons (lambda (vertex) (map-point vertex frame))
+                                  (getf model 'polygons))))))
+
+(define (transform-painter painter frame)
+  (if (not (type=? model frame))
+      (display "(^^;1 "))
+  (if (type=? painter frame)
+      (make-painter (type-pf painter)
+                    (type-of frame)
+                    (list painter frame)
+                    (map-polygons (lambda (vetrex) (map-point vertex frame))
+                                  (getf (painter 'model) 'polygons)))))
+
+(define (painter:polyhedron attribute points triangles)
+  (make-painter 'dim3
+                'polyhedron
+                (list points triangles)
+                (make-polygons-polyhedron attribute points triangles)))
+
+(define (painter:union painter . painters)
+  (let* ((painters (cons painter painters)))
+    (make-painter (getf (car models) 'type)
+                  'union
+                  (list painters)
+                  (mapend (lambda (p) (getf (p 'model) 'polygons))
+                          painters))))
+
+;;; optional painter
+
+(define (painter:cube attribute size)
+  (make-painter 'dim3
+                'cube
+                (list size)
+                (make-polygons-cuboid attribute size)))
+
+(define (painter:sphere attribute radius resolution)
+  (make-painter 'dim3
+                'sphere
+                (list radius resolution)
+                (make-polygons-sphere attribute radius resolution)))
+
+(define (painter:cylinder attribute height top-radius bottom-radius resolution)
+  (make-painter 'dim3
+                'cylinder
+                (list height top-radius bottom-radius resolution)
+                (make-polygons-cylinder attribute
+                                        height top-radius bottom-radius resolution)))
+
+(define (painter:scale scale painter)
+  (make-painter (getf (painter 'model) 'type)
+                'scale
+                (list scale painter)
+                (map-polygons (lambda (vertex) (mul scale vertex))
+                              (getf (painter 'model) 'polygons))))
+
+(define (painter:rotate degree axis painter)
+  (let ((rad (degree->radian degree)))
+    (make-painter (getf (painter 'model) 'type)
+                  'rotate
+                  (list degree axis painter)
+                  (map-polygons (lambda (vertex) (rod axis rad vertex))
+                                (getf (painter 'model) 'polygons)))))
+
+(define (painter:translate vector painter)
+  (make-painter (getf (painter 'model) 'type)
+                'translate
+                (list vector painter)
+                (map-polygons (lambda (vertex) (add vector vertex))
+                              (getf (painter 'model) 'polygons))))
+
+;; render interface
 
 (define (twin->pair twin)
   (cons (list-ref twin 0) (list-ref twin 1)))
 
-(define (2d-ll-model->painter 2d-ll-model)
-  (lambda (frame)
-    (let ((2d-frame (if (2d-frame? frame) frame +2d-frame-full+))
-          (nt-frame (if (nt-frame? frame) frame +nt-frame-full+)))
-      (do ((polys (getf 2d-ll-model 'polygons) (cdr polys)))
-          ((null? polys) #t)
-        (let ((head (car polys)))
-          (let ((color (getf (getf head 'attribute) 'color))
-                (verts (getf head 'vertexes)))
-            (set-color (color->hex color))
-            ((vertexes->painter
-              (map (lambda (v) (twin->pair (map-point v 2d-frame)))
-                   verts)
-              *painter-filled?*)
-             nt-frame)))))))
+(define (draw model)
+  (let ((2d-model (case (type-of model)
+                    ('dim2 model)
+                    ('dim3 (3d-model->2d-model model *camera* *lights*)))))
+    (do ((polygons (getf 2d-model 'polygons) (cdr polygons)))
+        ((null? polygons)
+         (set! *latest-2d-model* 2d-model)
+         #t)
+      (let ((polygon (car polygons)))
+        (let ((color (getf (getf polygon 'attribute) 'color))
+              (vertexes (getf polygon 'vertexes)))
+          (set-color (color->hex color))
+          ((vertexes->painter
+            (map (lambda (vertex) (twin->pair vertex))
+                 vertexes)
+            *painter-filled?*)
+           +nt-frame-full+))))))
 
-(define (3d-ll-model->painter 3d-ll-model)
-  (lambda (frame)
-    (let ((3d-frame (if (3d-frame? frame) frame +3d-frame-full+))
-          (2d-frame (if (or (2d-frame? frame) (nt-frame? frame))
-                        frame
-                        +2d-frame-full+)))
-      (let* ((mkv (lambda (v) (map-point v 3d-frame)))
-             (mkp (lambda (p) (make-polygon (getf p 'attribute)
-                                            (map mkv (getf p 'vertexes)))))
-             (3dll (make-ll-model '3d-model (map mkp (getf 3d-ll-model 'polygons))))
-             (2dll (3d-ll-model->2d-ll-model 3dll *camera* *lights*)))
-        ((2d-ll-model->painter 2dll) 2d-frame)))))
+(define (redraw)
+  (if (null? *latest-2d-model*)
+      (error "not drawn any model")
+      (draw *latest-2d-model*)))
 
 (define (show painter . frame)
   (clear-picture)

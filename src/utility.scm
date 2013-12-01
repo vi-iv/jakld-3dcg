@@ -60,6 +60,9 @@
           (else
            (filter predicate tail)))))
 
+(define (mappend procedure . lists)
+  (apply append (apply map procedure lists)))
+
 (define (some predicate . sequences)
   (define (some-null? seq)
     (if (null? seq)
@@ -221,6 +224,16 @@
      (* (norm vector0) (norm vector1))))
 
 (define (rod axis radian vector)
+  (let ((dim (length vector)))
+    (cond ((= dim 2) (rod2 axis radian vector))
+          ((= dim 3) (rod3 axis radian vector)))))
+
+(define (rod2 axis radian vector)
+  (let ((rotmat (list (list (cos radian) (- (sin radian)))
+                      (list (sin radian) (cos radian)))))
+    (matrix->vector (mul rotmat (vector->matrix vector)))))
+
+(define (rod3 axis radian vector)
   (let ((den (if (zero-vector? axis)
                  +eps+
                  (norm axis))))

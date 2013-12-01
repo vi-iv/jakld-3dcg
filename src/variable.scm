@@ -29,3 +29,5 @@
 (define *painter-filled?* #t)
 
 (define *resolution-scale* 10)
+
+(define *latest-2d-model* nil)
