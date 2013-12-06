@@ -22,18 +22,31 @@
 ;; THE SOFTWARE.
 ;; =============================================================================
 
-;;;; Load
+;;; Menger sponge
 
-;;(start-picture)
+(define (painter:menger-sponge attribute size max-count)
+  (define (menger-sponge% origin size counter)
+    (if (<= counter 0)
+        (painter:translate origin (painter:cube attribute (list size size size)))
+        (let* ((s/3 (/ size 3.0))
+               (2s/3 (* 2 (/ size 3.0)))
+               (unit (list 0.0 s/3 2s/3))
+               (void (list 4 10 12 13 14 16 22))
+               (next (lambda (o) (menger-sponge% (add o origin) s/3 (1- counter)))))
+          (let iter ((x 3) (y 3) (z 3) (number 0) (result nil))
+            (cond ((= z 0) (apply painter:union (map next result)))
+                  ((= y 0) (iter x 3 (1- z) number result))
+                  ((= x 0) (iter 3 (1- y) z number result))
+                  (else (iter (1- x) y z (1+ number)
+                              (if (member number void)
+                                  result
+                                  (cons (map (lambda (n) (list-ref unit (1- n)))
+                                             (list x y z) )
+                                        result)))))))))
+  (menger-sponge% (list 0.0 0.0 0.0) size max-count))
 
-(load "utility.scm")
-(load "modeling.scm")
-(load "rendering.scm")
-(load "fileio.scm")
-(load "variable.scm")
+(define menger-sponge-001
+  (painter:menger-sponge attribute0 10 0))
 
-(load "../mod/variable.scm")
-(load "../mod/trivial-shape.scm")
-(load "../mod/menger-sponge.scm")
-(load "../mod/sierpinski-tetrahedron.scm")
-;;(load "../mod/broccolo-romanesco.scm") mada-dekite-nai
+(define menger-sponge-002
+  (painter:menger-sponge attribute0 10 1))

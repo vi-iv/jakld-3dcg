@@ -22,18 +22,42 @@
 ;; THE SOFTWARE.
 ;; =============================================================================
 
-;;;; Load
+;;;; variable (model)
 
-;;(start-picture)
+;;; camera and lights
 
-(load "utility.scm")
-(load "modeling.scm")
-(load "rendering.scm")
-(load "fileio.scm")
-(load "variable.scm")
+(define camera0 (make-camera '(10.0 10.0 10.0)
+                             '(-1.0 -1.0 -1.0)
+                             '(60.0 60.0 200.0)))
 
-(load "../mod/variable.scm")
-(load "../mod/trivial-shape.scm")
-(load "../mod/menger-sponge.scm")
-(load "../mod/sierpinski-tetrahedron.scm")
-;;(load "../mod/broccolo-romanesco.scm") mada-dekite-nai
+(define camera1 (make-camera '(0.5 1.0 0.5)
+                             '(-1.0 -2.0 -1.0)
+                             '(7.5 7.5 20.0)))
+
+(define camera2 (make-camera '(1.0 1.0 1.0)
+                             '(-1.0 -1.0 -1.0)
+                             '(7.5 7.5 20.0)))
+
+(define lights0 (list (make-parallel-light '(-1.0 -1.0 -1.0)
+                                           (make-intensity 0.5 0.5 0.5))))
+
+(set! *camera* camera0)
+(set! *lights* lights0)
+
+;;; color and attribute
+
+(define attribute0
+  (make-attribute (hex->color #x000000)
+                  (hex->color #x4169E1)
+                  (hex->color #x4169E1)
+                  (hex->color #xffffff)
+                  (make-color 0 0 0)
+                  3))
+
+(define attribute1
+  (make-attribute (hex->color #x000000)
+                  (hex->color #x222222)
+                  (hex->color #x222222)
+                  (hex->color #xffffff)
+                  (make-color 0 0 0)
+                  3))

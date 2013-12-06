@@ -1,5 +1,5 @@
 ## 3DCG on JAKLD (jakld-3dcg)
-* version 0.3.0
+* version 0.3.2
 
 ### 概要
 * Structure and Interpretation of Computer Programs[1] による Picture Language の応用
@@ -29,11 +29,12 @@
 * 描画
     * (model frame) ; フレーム指定あり
     * (show model)  ; フレーム指定なし(描画可能範囲全体を使用)
+    * (redraw)      ; 再描画 (高速)
 * 保存
-    * (export model "model.scm") ; S 式として保存
-    * (export model "model.scad" 'scad) ; SCAD スクリプト[3]として保存
+    * (export "model.scm") ; 直前のモデルを S 式として保存
+    * (export "model.scad" 'scad) ; 同, SCAD スクリプト[3]として保存
 * 読込み
-    * (import model "model.scm") ; 読込は S 式のみで可
+    * (import "model.scm") ; 読込は S 式のみで可
 
 ### サンプル
 * sample.scm (load.scm でロード済み)
@@ -44,18 +45,13 @@
 
 ### 備考
 * 保存形式は S 式または SCAD スクリプト
-* 描画時に負荷が高いのは仕様 (計算時間大)
-* 描画時の 3D フレーム指定を不可能とするかわりに遅延評価しない版: modeling2.scm
-    * (load "modeling2.scm")
-    * この版ではモデル定義時に負荷が高い
-    * 更に視点, 証明はモデル定義時のもの (描画時ではなく) が使用される
-* 標準で modeling2.scm をロードするようにした
 * 立体の表面のポリゴン分割は SCAD と互換性なし
 
 ### TODO
-* マニュアル書く
+* マニュアル書く?
 * phong-mode-shade 周辺にバグ (色が変)
 * 未実装: intersection, defference, ...
+* Broccolo Romanesco
 
 ### リンク
 * [1] http://mitpress.mit.edu/sicp/full-text/book/book.html

@@ -22,18 +22,26 @@
 ;; THE SOFTWARE.
 ;; =============================================================================
 
-;;;; Load
+;;; Helix
 
-;;(start-picture)
+(define (painter:helix height radius begin interval end painters)
+  (do ((ts (enumerate begin end interval) (cdr ts))
+       (painters painters (cdr painters))
+       (result nil))
+      ((or (null? ts) (null? painters))
+       (apply painter:union result))
+    (let* ((theta (car ts))
+           (painter (car painters))
+           (x (* theta radius (cos theta)))
+           (y (* theta radius (sin theta)))
+           (z (* height (/ theta end))))
+      (set! result
+            (append1 result (painter:translate (list x y z) painter))))))
 
-(load "utility.scm")
-(load "modeling.scm")
-(load "rendering.scm")
-(load "fileio.scm")
-(load "variable.scm")
+(define spiral-001
+  (painter:helix 0 1 0 0.2 (* 10 +pi+)
+                 (repeat (painter:cube attribute0 (list 1 1 1)) 100)))
 
-(load "../mod/variable.scm")
-(load "../mod/trivial-shape.scm")
-(load "../mod/menger-sponge.scm")
-(load "../mod/sierpinski-tetrahedron.scm")
-;;(load "../mod/broccolo-romanesco.scm") mada-dekite-nai
+(define spiral-002
+  (painter:helix 10 10 0 0.2 (* 2 +pi+)
+                 (repeat (painter:cube attribute0 (list 1 1 1)) 100))

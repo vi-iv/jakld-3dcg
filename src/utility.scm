@@ -34,6 +34,9 @@
 (define (append1 lst element)
   (append lst (list element)))
 
+(define (single? lst)
+  (and (pair? lst) (null? (cdr lst))))
+
 (define (last lst . n)
   (let ((n (if (null? n) 1 (car n))))
     (list-tail lst (- (length lst) n))))
@@ -45,6 +48,9 @@
   (let ((l (length lst))
         (n (if (null? n) 1 (car n))))
     (reverse (last (reverse lst) (- l n)))))
+
+(define (ring lst)
+  (append1 lst (car lst)))
 
 (define (group sequence n)
   (let rec0 ((seq sequence))
@@ -67,6 +73,9 @@
       0
       (max (1+ (depth (car expression)))
            (depth (cdr expression)))))
+
+(define (twin->pair twin)
+  (cons (list-ref twin 0) (list-ref twin 1)))
 
 (define (accumulate operator initial sequence)
   (if (null? sequence)
@@ -153,6 +162,12 @@
   (do ((n begin (+ n difference))
        (result nil (append1 result n)))
       ((>= n end) result)))
+
+(define (repeat object n)
+  (let rec ((result nil) (counter 0))
+    (if (>= counter n)
+        result
+        (rec (append1 result object) (1+ counter)))))
 
 ;;; math
 
@@ -283,6 +298,11 @@
         (begin (display (car v))
                (newline)
                (rec (cdr v))))))
+
+(define (distance vector0 vector1 . kind)
+  (case (car kind)
+    ('euclid (norm (sub vector0 vector1)))
+    (else (distance vector0 vector1 'euclid))))
 
 ;;; matrix
 
