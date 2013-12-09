@@ -36,11 +36,11 @@
   (list 'r r 'g g 'b b))
 
 (define (make-attribute color ka kd ks ke shininess)
-  (list 'color color         ;
-        'ka ka               ;
-        'kd kd               ;
-        'ks ks               ;
-        'ke ke               ;
+  (list 'color color         ; used for 2d
+        'ka ka               ; ambient
+        'kd kd               ; diffuse
+        'ks ks               ; specular
+        'ke ke               ; emission
         'shininess shininess ;
         ))
 
@@ -51,8 +51,8 @@
             (g (getf color 'g))
             (b (getf color 'b)))
         (+ (* (expt 16 4) (floor (* 255 r)))
-           (* (expt 16 2) (floor (* 255 b)))
-           (floor (* 255 g))))))
+           (* (expt 16 2) (floor (* 255 g)))
+           (floor (* 255 b))))))
 
 (define (hex->color hex)
   (let ((r (/ hex (expt 16 4)))
@@ -230,11 +230,11 @@
                            painters))))
 
 (define (painter:transform painter frame)
-  (if (type=? painter frame)
-      (make-painter (type-of painter)
+  (if (type=? (painter 'model) frame)
+      (make-painter (painter 'type)
                     (type-of frame)
                     (list frame (painter 'model))
-                    (map-polygons (lambda (vetrex) (map-point vertex frame))
+                    (map-polygons (lambda (vertex) (map-point vertex frame))
                                   (getf (painter 'model) 'polygons)))))
 
 ;;; optional painter
@@ -288,8 +288,19 @@
   (make-painter (getf (painter 'model) 'type)
                 'scale
                 (list scale (painter 'model))
-                (map-polygons (lambda (vertex) (mul scale vertex))
-                              (getf (painter 'model) 'polygons))))
+                (let ((num 0)
+                      (cent0 (list 0.0 0.0 0.0))
+                      (cent1 (list 0.0 0.0 0.0)))
+                  (map-polygons
+                   (lambda (vertex)
+                     (sub vertex (scl (/ num) (sub cent1 cent0))))
+                   (map-polygons (lambda (vertex)
+                                   (set! num (1+ num))
+                                   (set! cent0 (add cent0 vertex))
+                                   (let ((after (scl scale vertex)))
+                                     (set! cent1 (add cent1 after))
+                                     after))
+                                 (getf (painter 'model) 'polygons))))))
 
 (define (painter:rotate degree axis painter)
   (let ((rad (degree->radian degree)))

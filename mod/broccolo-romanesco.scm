@@ -51,7 +51,7 @@
            (z1 (* height (/ theta end)))
            (position (list x1 y1 z1))
            (direction (list x0 y0 z0)))
-      (let ((painter (painter:cone attribute0 position direction 5 2)))
+      (let ((painter (painter:cone attribute-001 position direction 5 2)))
         (set! result (append1 result painter))))))
 
 (define cone-helix-001

@@ -46,7 +46,10 @@
   (menger-sponge% (list 0.0 0.0 0.0) size max-count))
 
 (define menger-sponge-001
-  (painter:menger-sponge attribute0 10 0))
+  (painter:menger-sponge attribute-001 10 0))
 
 (define menger-sponge-002
-  (painter:menger-sponge attribute0 10 1))
+  (painter:menger-sponge attribute-001 10 1))
+
+(define menger-sponge-003
+  (painter:menger-sponge attribute-001 10 2))

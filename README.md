@@ -1,5 +1,5 @@
 ## 3DCG on JAKLD (jakld-3dcg)
-* version 0.3.2
+* version 0.3.3
 
 ### 概要
 * Structure and Interpretation of Computer Programs[1] による Picture Language の応用
@@ -37,10 +37,10 @@
     * (import "model.scm") ; 読込は S 式のみで可
 
 ### サンプル
-* sample.scm (load.scm でロード済み)
-    * (show cube0)
-    * (show sphere0)
-    * (show cylinder0)
+* mod/*.scm (load.scm でロード済み)
+    * (show cube-001)
+    * (show sphere-001)
+    * (show cylinder-001)
     * ...
 
 ### 備考
@@ -48,8 +48,7 @@
 * 立体の表面のポリゴン分割は SCAD と互換性なし
 
 ### TODO
-* マニュアル書く?
-* phong-mode-shade 周辺にバグ (色が変)
+* マニュアル
 * 未実装: intersection, defference, ...
 * Broccolo Romanesco
 

@@ -27,32 +27,32 @@
 ;;; cube
 
 (define cube-001
-  (painter:cube attribute0 (list 10.0 10.0 10.0)))
+  (painter:cube attribute-001 (list 10.0 10.0 10.0)))
 
 (define cube-002
-  (painter:cube attribute0 (list 5.0 5.0 5.0)))
+  (painter:cube attribute-001 (list 10.0 15.0 20.0)))
 
 ;;; sphere
 
 (define sphere-001
-  (painter:sphere attribute0 10.0 0))
+  (painter:sphere attribute-001 10.0 0))
 
 (define sphere-002
-  (painter:sphere attribute0 10.0 1))
+  (painter:sphere attribute-001 10.0 1))
 
 (define sphere-003
-  (painter:sphere attribute0 10.0 2))
+  (painter:sphere attribute-001 10.0 2))
 
 (define sphere-004
-  (painter:sphere attribute0 10.0 3))
+  (painter:sphere attribute-001 10.0 3))
 
 ;;; cylinder
 
 (define cylinder-001
-  (painter:cylinder attribute0 10.0 5.0 5.0 2))
+  (painter:cylinder attribute-001 10.0 5.0 5.0 2))
 
 (define cylinder-002
-  (painter:cylinder attribute0 20.0 0.0 5.0 2))
+  (painter:cylinder attribute-001 20.0 0.0 5.0 2))
 
 ;;; compounded
 
@@ -105,14 +105,58 @@
 
 ;;; revolution
 
-(define grass-001
+(define glass-001
   (painter:translate
    '(-100 -40 -60)
    (painter:revolution
-    attribute0
+    attribute-001
     (map (lambda (p) (scl 1.5 (append1 p 0)))
          '(( 0  0) ( 0 16) ( 2 16) ( 3  5) ( 5  3)
            (10  2) (15  2) (20  3) (25 10) (28 15)
            (32 18) (35 19) (40 20) (50 20) (49 18)
            (36 17) (31 14) (27  9) (25  5) (24  0)))
     5)))
+
+;;; scale
+
+(define scale-001
+  (let ((c (painter:cube attribute-001 '(10 10 10))))
+    (painter:union
+     (painter:translate '(0 -10  24) c)
+     (painter:translate '(0 -10  12) (painter:scale '(2 1 1) c))
+     (painter:translate '(0 -10   0) (painter:scale '(3 1 1) c))
+     (painter:translate '(0 -10 -12) (painter:scale '(4 1 1) c)))))
+
+;;; rotate
+
+(define rotate-001
+  (let ((c (painter:cube attribute-001 '(10 10 10))))
+    (painter:union
+     (painter:translate '(0 -10  24) c)
+     (painter:translate '(0 -10  12) (painter:rotate 20 '(0 0 1) c))
+     (painter:translate '(0 -10   0) (painter:rotate 40 '(0 0 1) c))
+     (painter:translate '(0 -10 -12) (painter:rotate 60 '(0 0 1) c)))))
+
+;;; translate
+
+(define translate-001
+  (let ((c (painter:cube attribute-001 '(10 10 10))))
+    (painter:union
+     (painter:translate '(0 -10  24) c)
+     (painter:translate '(0 -10  12) c)
+     (painter:translate '(0 -10   0) c)
+     (painter:translate '(0 -10 -12) c))))
+
+;;; transform
+
+(define transform-001
+  (let ((c (painter:cube attribute-001 '(10 10 10))))
+    (painter:union
+     (painter:translate '(-20 -10 0) c)
+     (painter:translate '(0 -10 0)
+                        (painter:transform
+                         c
+                         (make-3d-frame '(0 0 0)
+                                        '(2 0 0)
+                                        '(0.6 1.5 0)
+                                        '(0 0.6 1.2)))))))

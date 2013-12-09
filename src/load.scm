@@ -36,4 +36,5 @@
 (load "../mod/trivial-shape.scm")
 (load "../mod/menger-sponge.scm")
 (load "../mod/sierpinski-tetrahedron.scm")
-;;(load "../mod/broccolo-romanesco.scm") mada-dekite-nai
+(load "../mod/helix.scm")
+(load "../mod/broccolo-romanesco.scm") ;; mada-dekite-nai

@@ -57,10 +57,10 @@
   (sierpinski-tetrahedron% (list 0.0 0.0 0.0) size max-count))
 
 (define sierpinski-tetrahedron-001
-  (painter:sierpinski-tetrahedron attribute0 40 0))
+  (painter:sierpinski-tetrahedron attribute-001 40 0))
 
 (define sierpinski-tetrahedron-002
-  (painter:sierpinski-tetrahedron attribute0 40 3))
+  (painter:sierpinski-tetrahedron attribute-001 40 3))
 
 (define sierpinski-tetrahedron-003
-  (painter:sierpinski-tetrahedron attribute0 40 5))
+  (painter:sierpinski-tetrahedron attribute-001 40 5))

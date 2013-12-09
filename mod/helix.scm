@@ -40,8 +40,8 @@
 
 (define spiral-001
   (painter:helix 0 1 0 0.2 (* 10 +pi+)
-                 (repeat (painter:cube attribute0 (list 1 1 1)) 100)))
+                 (repeat (painter:cube attribute-001 (list 1 1 1)) 100)))
 
 (define spiral-002
   (painter:helix 10 10 0 0.2 (* 2 +pi+)
-                 (repeat (painter:cube attribute0 (list 1 1 1)) 100))
+                 (repeat (painter:cube attribute-001 (list 1 1 1)) 100)))
