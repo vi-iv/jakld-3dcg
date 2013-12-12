@@ -88,54 +88,57 @@
         (list-ref properties (car n)))))
 
 (define (model->scad-string model)
-  (let ((subtype (getf model 'subtype)))
-    (case subtype
-      ('polyhedron
-       (let ((points (property model 0))
-             (triangles (map reverse (property model 1))))
-         (string-append "polyhedron(points=[" (vectors->string points) "], " +NL+
-                        "triangles=[" (vectors->string triangles) "]);" +NL+)))
-      ('union
-       (let ((child-strs (map (lambda (m) (string-append (model->scad-string m) +NL+))
-                              (property model))))
-         (string-append "union() {" +NL+
-                        (apply string-append child-strs) "}" +NL+)))
-      ('dim3
-       (let* ((frame (property model 0))
-              (affin (append1 (transpose (append1 (getf frame 'edges) (getf frame 'origin)))
-                              (list 0 0 0 1))))
-         (string-append "multmatrix(m=[" (vectors->string affin) "]) {" +NL+
-                        (model->scad-string (property model 1)) "}" +NL+)))
-      ('dim2
-       (error "exporting 2d-model as SCAD not allowed"))
-      ('cube
-       (let ((size (property model 0)))
-         (string-append "cube(size=[" (vector->string size) "],center=false);" +NL+)))
-      ('sphere
-       (let ((radius (property model 0))
-             (resolution (* *resolution-scale* (property model 1))))
-         (string-append "sphere(r=" (number->string radius)
-                        ",$fn=" (number->string resolution) ",center=false);" +NL+)))
-      ('cylinder
-       (let ((height (property model 0))
-             (top-radius (property model 1))
-             (bottom-radius (property model 2))
-             (resolution (* *resolution-scale* (property model 3))))
-         (string-append "cylinder(h=" (number->string height)
-                        (string-append ",r1=" (number->string bottom-radius)
-                                       ",r2=" (number->string top-radius))
-                        ",$fn=" (number->string resolution) ",center=false);" +NL+)))
-      ('scale
-       (let ((scale (property model 0)))
-         (string-append "scale(v=[" (vector->string scale) "]) {" +NL+
-                        (model->scad-string (property model 1)) "}" +NL+)))
-      ('rotate
-       (let ((degree (property model 0))
-             (axis (property model 1)))
-         (string-append "rotate(" (number->string degree)
-                        ",[" (vector->string axis) "]) {" +NL+
-                        (model->scad-string (property model 1)) "}" +NL+)))
-      ('translate
-       (let ((vector (property model 0)))
-         (string-append "translate(v=[" (vector->string vector) "]) {" +NL+
-                        (model->scad-string (property model 1)) "}" +NL+))))))
+  (if (null? model)
+      (error "not drawn any models")
+      (let ((subtype (getf model 'subtype)))
+        (case subtype
+          ('polyhedron
+           (let ((points (property model 0))
+                 (triangles (map reverse (property model 1))))
+             (string-append "polyhedron(points=[" (vectors->string points) "], " +NL+
+                            "triangles=[" (vectors->string triangles) "]);" +NL+)))
+          ('union
+           (let ((child-strs (map (lambda (m) (string-append (model->scad-string m) +NL+))
+                                  (property model))))
+             (string-append "union() {" +NL+
+                            (apply string-append child-strs) "}" +NL+)))
+          ('dim3
+           (let* ((frame (property model 0))
+                  (affin (append1
+                          (transpose (append1 (getf frame 'edges) (getf frame 'origin)))
+                          (list 0 0 0 1))))
+             (string-append "multmatrix(m=[" (vectors->string affin) "]) {" +NL+
+                            (model->scad-string (property model 1)) "}" +NL+)))
+          ('dim2
+           (error "exporting 2d-model as SCAD not allowed"))
+          ('cube
+           (let ((size (property model 0)))
+             (string-append "cube(size=[" (vector->string size) "],center=false);" +NL+)))
+          ('sphere
+           (let ((radius (property model 0))
+                 (resolution (* *resolution-scale* (property model 1))))
+             (string-append "sphere(r=" (number->string radius)
+                            ",$fn=" (number->string resolution) ",center=false);" +NL+)))
+          ('cylinder
+           (let ((height (property model 0))
+                 (top-radius (property model 1))
+                 (bottom-radius (property model 2))
+                 (resolution (* *resolution-scale* (property model 3))))
+             (string-append "cylinder(h=" (number->string height)
+                            (string-append ",r1=" (number->string bottom-radius)
+                                           ",r2=" (number->string top-radius))
+                            ",$fn=" (number->string resolution) ",center=false);" +NL+)))
+          ('scale
+           (let ((scale (property model 0)))
+             (string-append "scale(v=[" (vector->string scale) "]) {" +NL+
+                            (model->scad-string (property model 1)) "}" +NL+)))
+          ('rotate
+           (let ((degree (property model 0))
+                 (axis (property model 1)))
+             (string-append "rotate(" (number->string degree)
+                            ",[" (vector->string axis) "]) {" +NL+
+                            (model->scad-string (property model 2)) "}" +NL+)))
+          ('translate
+           (let ((vector (property model 0)))
+             (string-append "translate(v=[" (vector->string vector) "]) {" +NL+
+                            (model->scad-string (property model 1)) "}" +NL+)))))))
