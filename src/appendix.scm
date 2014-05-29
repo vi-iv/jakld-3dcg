@@ -103,8 +103,6 @@
                                                       unit-size))))
                             body))
                 (result nil))
-            (set! *hoge* body)
-
             (apply painter:union
                    (do ((i 0 (1+ i)))
                        ((>= i height) result)
