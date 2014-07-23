@@ -171,6 +171,10 @@
 
 ;;; math
 
+(define (zero n) 0)
+
+(define (identity n) n)
+
 (define (/= number . numbers)
   (let rec0 ((ns0 (cons number numbers)))
     (if (null? ns0)

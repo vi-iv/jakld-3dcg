@@ -38,3 +38,4 @@
 (load "../mod/sierpinski-tetrahedron.scm")
 (load "../mod/helix.scm")
 (load "../mod/broccolo-romanesco.scm") ;; mada-dekite-nai
+(load "../mod/trivial-art.scm")
