@@ -129,7 +129,8 @@
                                            ",r2=" (number->string top-radius))
                             ",$fn=" (number->string resolution) ",center=false);" +NL+)))
           ('scale
-           (let ((scale (property model 0)))
+           (let* ((scale% (property model 0))
+                  (scale (if (list? scale%) scale% (repeat scale% 3))))
              (string-append "scale(v=[" (vector->string scale) "]) {" +NL+
                             (model->scad-string (property model 1)) "}" +NL+)))
           ('rotate
