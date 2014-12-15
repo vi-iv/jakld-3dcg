@@ -22,48 +22,14 @@
 ;; THE SOFTWARE.
 ;; =============================================================================
 
-;;;; variable (model)
+;;; PGM Picture
 
-;;; camera and lights
-
-(define camera-001
-  (make-camera '(12.0 12.0 12.0)
-               '(-1.0 -1.0 -1.0)
-               '(60.0 60.0 200.0)))
-
-(define camera-002
-  (make-camera '(0.5 1.0 0.5)
-               '(-1.0 -2.0 -1.0)
-               '(7.5 7.5 20.0)))
-
-(define camera-003
-  (make-camera '(1.0 1.0 1.0)
-               '(-1.0 -1.0 -1.0)
-               '(7.5 7.5 20.0)))
-
-(define lights-001
-  (list (make-parallel-light '(-1.0 -1.0 -1.0)
-                             (make-intensity 0.5 0.5 0.5))))
-
-(set! *camera* camera-001)
-(set! *lights* lights-001)
-
-;;; color and attribute
-
-(define attribute-001
-  (make-attribute (hex->color #x000000)
-                  (hex->color #x4169E1)
-                  (hex->color #x4169E1)
-                  (hex->color #xffffff)
-                  (hex->color #x000000)
-                  3))
-
-(define attribute-002
-  (make-attribute (hex->color #x000000)
-                  (hex->color #x222222)
-                  (hex->color #x222222)
-                  (hex->color #xffffff)
-                  (hex->color #x000000)
-                  3))
-
-(define *attribute* attribute-001)
+(define pgm-picture-001
+  (let ((unit-size 1) (max-height 4))
+    (painter:translate (list (- (* 8 unit-size))
+                             0
+                             (- (* 8 unit-size)))
+                       (painter:pgm-picture "../mod/pgms/circle_b.pgm"
+                                            attribute-001
+                                            unit-size
+                                            max-height))))

@@ -22,48 +22,26 @@
 ;; THE SOFTWARE.
 ;; =============================================================================
 
-;;;; variable (model)
+;;;; Practice 4
+;;;; 3D ペインタの入出力・エクスポート等
+;;;;
+;;;; + 既存の手続き一覧
+;;;;   - 出力 (export <ファイル名> <"'scad">opt)
+;;;;   - 入力 (import <ファイル名>)
+;;;;   - 直前の描画結果を再描画 (reshow)
 
-;;; camera and lights
+;;(show *union*)
 
-(define camera-001
-  (make-camera '(12.0 12.0 12.0)
-               '(-1.0 -1.0 -1.0)
-               '(60.0 60.0 200.0)))
+;;;; 出力
 
-(define camera-002
-  (make-camera '(0.5 1.0 0.5)
-               '(-1.0 -2.0 -1.0)
-               '(7.5 7.5 20.0)))
+;;(export "painter-union.scm") ;; S 式として 3D ペインタ *union* を出力
 
-(define camera-003
-  (make-camera '(1.0 1.0 1.0)
-               '(-1.0 -1.0 -1.0)
-               '(7.5 7.5 20.0)))
+;;(export "painter-union.scad" 'scad) ;; OpenSCAD スクリプトとして出力
 
-(define lights-001
-  (list (make-parallel-light '(-1.0 -1.0 -1.0)
-                             (make-intensity 0.5 0.5 0.5))))
+;;;; 入力
 
-(set! *camera* camera-001)
-(set! *lights* lights-001)
+;;(import "painter-union.scm")
 
-;;; color and attribute
+;;;; 再描画
 
-(define attribute-001
-  (make-attribute (hex->color #x000000)
-                  (hex->color #x4169E1)
-                  (hex->color #x4169E1)
-                  (hex->color #xffffff)
-                  (hex->color #x000000)
-                  3))
-
-(define attribute-002
-  (make-attribute (hex->color #x000000)
-                  (hex->color #x222222)
-                  (hex->color #x222222)
-                  (hex->color #xffffff)
-                  (hex->color #x000000)
-                  3))
-
-(define *attribute* attribute-001)
+;;(reshow)

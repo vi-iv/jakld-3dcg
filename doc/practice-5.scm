@@ -22,48 +22,32 @@
 ;; THE SOFTWARE.
 ;; =============================================================================
 
-;;;; variable (model)
+;;;; Practice 5
+;;;; その他，3Dモデルを描画する際の設定など
+;;;;
+;;;; + 既存の手続き一覧
+;;;;   - (make-simple-attribute <色>)
+;;;;   - (make-camera <視点の位置> <視線の方向> <視野の範囲>)
+;;;;   - (make-simple-light <平行光線の方向>)
 
-;;; camera and lights
+;;;; 色
 
-(define camera-001
-  (make-camera '(12.0 12.0 12.0)
-               '(-1.0 -1.0 -1.0)
-               '(60.0 60.0 200.0)))
+(define *red*
+  (make-simple-attribute #xff0000))
 
-(define camera-002
-  (make-camera '(0.5 1.0 0.5)
-               '(-1.0 -2.0 -1.0)
-               '(7.5 7.5 20.0)))
+(define *red-cube*
+  (painter:cube *red* '(5 5 5)))
 
-(define camera-003
-  (make-camera '(1.0 1.0 1.0)
-               '(-1.0 -1.0 -1.0)
-               '(7.5 7.5 20.0)))
+;;(show *red-cube*)
 
-(define lights-001
-  (list (make-parallel-light '(-1.0 -1.0 -1.0)
-                             (make-intensity 0.5 0.5 0.5))))
+;;;; 視点の位置・方向
 
-(set! *camera* camera-001)
-(set! *lights* lights-001)
+;;(set! *camera*
+;;      (make-camera '(0 0 20)
+;;                   '(0 0 -1)
+;;                   '(80 80 100)))
 
-;;; color and attribute
+;;;; 光源 (光線) の方向
 
-(define attribute-001
-  (make-attribute (hex->color #x000000)
-                  (hex->color #x4169E1)
-                  (hex->color #x4169E1)
-                  (hex->color #xffffff)
-                  (hex->color #x000000)
-                  3))
-
-(define attribute-002
-  (make-attribute (hex->color #x000000)
-                  (hex->color #x222222)
-                  (hex->color #x222222)
-                  (hex->color #xffffff)
-                  (hex->color #x000000)
-                  3))
-
-(define *attribute* attribute-001)
+;;(set! *lights*
+;;      (list (make-simple-light '(1 0 0))))
