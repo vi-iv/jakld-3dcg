@@ -117,15 +117,3 @@
                                                    0
                                                    (* j (- unit-size +eps+)))
                                              p))))))))))))))
-
-;;;
-
-(define pgm-picture-001
-  (let ((unit-size 1) (max-height 4))
-    (painter:translate (list (- (* 8 unit-size))
-                             0
-                             (- (* 8 unit-size)))
-                       (painter:pgm-picture "../mod/pgms/circle_b.pgm"
-                                            attribute-001
-                                            unit-size
-                                            max-height))))

@@ -47,6 +47,9 @@
 (define (point-light? light)
   (eq? (type-of light) 'point))
 
+(define (make-simple-light direction)
+  (make-parallel-light direction (make-intensity 0.5 0.5 0.5)))
+
 ;;; camera
 
 (define (make-camera position direction view-volume)

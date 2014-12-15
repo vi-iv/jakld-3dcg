@@ -35,6 +35,14 @@
 (define (make-color r g b)
   (list 'r r 'g g 'b b))
 
+(define (make-simple-attribute color)
+  (make-attribute (hex->color #x000000)
+                  (hex->color color)
+                  (hex->color color)
+                  (hex->color #xffffff)
+                  (hex->color #x000000)
+                  3))
+
 (define (make-attribute color ka kd ks ke shininess)
   (list 'color color         ; used for 2d
         'ka ka               ; ambient
@@ -359,7 +367,7 @@
               *painter-filled?*)
              +nt-frame-full+)))))))
 
-(define (redraw)
+(define (reshow)
   (if (null? *render-cache*)
       (error "not drawn any models")
       (draw *render-cache*)))
